@@ -1,0 +1,219 @@
+<!-- shops.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Management - Super Mall</title>
+    <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" 
+    crossorigin="anonymous"
+    >    
+    <style>
+        .shop-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .shop-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .edit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">Super Mall</a>
+            <div class="d-flex">
+                <button class="btn btn-outline-light me-2" id="addShopBtn">Add New Shop</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="shopsContainer"></div>
+    </div>
+
+    <!-- Add/Edit Shop Modal -->
+    <div class="modal fade" id="shopModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Add New Shop</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" title="shop"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="shopForm">
+                        <div class="mb-3">
+                            <label class="form-label">Shop Name</label>
+                            <input type="text" class="form-control" id="shopName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="shopDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="shopCategory" required  title="category"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Floor</label>
+                            <select class="form-select" id="shopFloor" required  title="floor"></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Shop</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+    crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { app, auth, db } from './scripts/firestore.js';
+        import { 
+            collection, getDocs, addDoc, doc, updateDoc, deleteDoc,
+            onSnapshot, serverTimestamp, query, where 
+        } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        let currentUser = null;
+        let selectedShopId = null;
+
+        // Initialize page
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = 'index.html';
+            
+            currentUser = user;
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const isAdmin = userDoc.data()?.role === 'admin';
+
+            initShopManagement(isAdmin);
+            loadDropdownOptions();
+        });
+
+        async function initShopManagement(isAdmin) {
+            // Real-time shop updates
+            const shopsQuery = collection(db, "shops");
+            onSnapshot(shopsQuery, (snapshot) => {
+                renderShops(snapshot.docs, isAdmin);
+            });
+
+            // Add Shop Button
+            document.getElementById('addShopBtn').addEventListener('click', () => {
+                document.getElementById('modalTitle').textContent = 'Add New Shop';
+                document.getElementById('shopForm').reset();
+                selectedShopId = null;
+                new bootstrap.Modal('#shopModal').show();
+            });
+
+            // Form Submission
+            document.getElementById('shopForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const shopData = {
+                    name: document.getElementById('shopName').value,
+                    description: document.getElementById('shopDescription').value,
+                    category: document.getElementById('shopCategory').value,
+                    floor: document.getElementById('shopFloor').value,
+                    updatedAt: serverTimestamp()
+                };
+
+                try {
+                    if (selectedShopId) {
+                        await updateDoc(doc(db, "shops", selectedShopId), shopData);
+                    } else {
+                        shopData.createdAt = serverTimestamp();
+                        shopData.ownerId = currentUser.uid;
+                        await addDoc(collection(db, "shops"), shopData);
+                    }
+                    new bootstrap.Modal('#shopModal').hide();
+                } catch (error) {
+                    console.error("Error saving shop:", error);
+                    alert("Error saving shop!");
+                }
+            });
+        }
+
+        function renderShops(shops, isAdmin) {
+            const container = document.getElementById('shopsContainer');
+            container.innerHTML = '';
+
+            shops.forEach(shopDoc => {
+                const shop = shopDoc.data();
+                const isOwner = shop.ownerId === currentUser?.uid;
+
+                const card = `
+                    <div class="col">
+                        <div class="card h-100 shop-card">
+                            ${(isAdmin || isOwner) ? 
+                                `<button class="btn btn-sm btn-warning edit-btn" 
+                                    data-id="${shopDoc.id}">✏️</button>` : ''}
+                            <div class="card-body">
+                                <h5 class="card-title">${shop.name}</h5>
+                                <p class="card-text">${shop.description}</p>
+                                <div class="text-muted small">
+                                    <span class="badge bg-primary">${shop.category}</span>
+                                    <span class="badge bg-secondary ms-2">Floor ${shop.floor}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+
+            // Add edit handlers
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    selectedShopId = e.target.dataset.id;
+                    const shopDoc = await getDoc(doc(db, "shops", selectedShopId));
+                    const shop = shopDoc.data();
+                    
+                    document.getElementById('shopName').value = shop.name;
+                    document.getElementById('shopDescription').value = shop.description;
+                    document.getElementById('shopCategory').value = shop.category;
+                    document.getElementById('shopFloor').value = shop.floor;
+                    
+                    document.getElementById('modalTitle').textContent = 'Edit Shop';
+                    new bootstrap.Modal('#shopModal').show();
+                });
+            });
+        }
+
+        async function loadDropdownOptions() {
+            const loadOptions = async (collectionName, elementId) => {
+                const select = document.getElementById(elementId);
+                select.innerHTML = '<option value="">Select...</option>';
+                
+                const snapshot = await getDocs(collection(db, collectionName));
+                snapshot.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.data().name;
+                    option.textContent = doc.data().name;
+                    select.appendChild(option);
+                });
+            };
+
+            await loadOptions('categories', 'shopCategory');
+            await loadOptions('floors', 'shopFloor');
+        }
+
+        window.logout = async () => {
+            await auth.signOut();
+            window.location.href = 'index.html';
+        };
+    </script>
+</body>
+</html>

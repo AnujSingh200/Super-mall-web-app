@@ -1,0 +1,194 @@
+<!-- admin-dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Super Mall</title>
+    <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" 
+    crossorigin="anonymous"
+    >
+    <link rel="stylesheet" href="./styles/style.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container">
+        <span class="navbar-brand">Super Mall Admin</span>
+        <div class="d-flex">
+          <button
+            class="btn btn-outline-light me-2"
+            onclick="window.location.href='dashboard.html'"
+          >
+            User View
+          </button>
+          <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+          <div class="list-group">
+            <a
+              href="#shops"
+              class="list-group-item list-group-item-action active"
+              data-bs-toggle="tab"
+              >Manage Shops</a
+            >
+            <a
+              href="#products"
+              class="list-group-item list-group-item-action"
+              data-bs-toggle="tab"
+              >Manage Products</a
+            >
+            <a
+              href="#categories"
+              class="list-group-item list-group-item-action"
+              data-bs-toggle="tab"
+              >Categories & Floors</a
+            >
+            <a
+              href="#offers"
+              class="list-group-item list-group-item-action"
+              data-bs-toggle="tab"
+              >Manage Offers</a
+            >
+            <a
+              href="#users"
+              class="list-group-item list-group-item-action"
+              data-bs-toggle="tab"
+              >User Management</a
+            >
+          </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="col-md-9 col-lg-10">
+          <div class="tab-content">
+            <!-- Shops Management -->
+            <div class="tab-pane fade show active" id="shops">
+              <div class="card">
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <h5>Manage Shops</h5>
+                  <button
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addShopModal"
+                  >
+                    <i class="bi bi-plus-lg"></i> Add Shop
+                  </button>
+                </div>
+                <div class="card-body">
+                  <!-- Add loading state -->
+                  <div id="loading" class="text-center py-5">
+                    <div
+                      class="spinner-border text-primary"
+                      role="status"
+                    ></div>
+                  </div>
+
+                  <!-- Update table structure -->
+                  <table class="table table-hover" id="shopsTable">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Floor</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products Management -->
+            <div class="tab-pane fade" id="products">
+              <!-- Similar structure as shops section -->
+            </div>
+
+            <!-- Categories & Floors Management -->
+            <div class="tab-pane fade" id="categories">
+              <div class="row">
+                <div class="col-md-6">
+                  <!-- Categories Management -->
+                </div>
+                <div class="col-md-6">
+                  <!-- Floors Management -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="addShopModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Shop</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              title="newShop"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="shopForm">
+              <div class="mb-3">
+                <label class="form-label">Shop Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="shopName"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select
+                  class="form-select"
+                  id="shopCategory"
+                  required
+                  title="Category"
+                ></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Floor</label>
+                <select
+                  class="form-select"
+                  id="shopFloor"
+                  required
+                  title="Floor"
+                ></select>
+              </div>
+              <button type="submit" class="btn btn-primary">Save Shop</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+    crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="scripts/admin.js"></script>
+  </body>
+</html>

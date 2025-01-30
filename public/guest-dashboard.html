@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Dashboard - Super Mall</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap CSS via CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/style.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Super Mall</a>
+        <button class="navbar-toggler" type="button" title="mall" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active"><a class="nav-link" href="#">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Products</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Categories</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">About Us</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="jumbotron text-center bg-primary text-white">
+        <h1>Welcome to Super Mall</h1>
+        <p>Explore our latest products and amazing deals!</p>
+    </header>
+
+    <!-- Search and Filter -->
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <input type="text" id="search-bar" class="form-control" placeholder="Search products...">
+            </div>
+            <div class="col-md-6">
+                <select id="category-filter" class="form-control" title="all">
+                    <option value="all">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="home">Home & Kitchen</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="container">
+        <div class="row" id="product-list">
+            <!-- Products will be loaded dynamically -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5 py-3 bg-light">
+        <p>&copy; 2025 Super Mall. All rights reserved.</p>
+    </footer>
+
+    <!-- Firebase Configuration & Script -->
+    <script>
+        // Firebase Config (Replace with your actual Firebase config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfMmjqS2cxK3oXiYEHlaOcGcX39A6eaOs",
+            authDomain: "super-mall-fa7bd.firebaseapp.com",
+            projectId: "super-mall-fa7bd",
+            storageBucket: "super-mall-fa7bd.appspot.com",
+            messagingSenderId: "1068556499670",
+            appId: "1:1068556499670:web:8db25a0943db03318d2777",
+            measurementId: "G-HS6XRJZK2C"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Fetch Products from Firebase
+        function fetchProducts() {
+            db.collection("products").get().then((querySnapshot) => {
+                const productList = document.getElementById("product-list");
+                productList.innerHTML = ""; // Clear previous content
+
+                querySnapshot.forEach((doc) => {
+                    const product = doc.data();
+                    const productCard = `
+                        <div class="col-md-4 mb-4 product-card" data-category="${product.category}">
+                            <div class="card">
+                                <img src="${product.image}" class="card-img-top" alt="${product.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${product.name}</h5>
+                                    <p class="card-text">${product.description}</p>
+                                    <p class="text-success"><strong>₹${product.price}</strong></p>
+                                    <a href="#" class="btn btn-primary">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    productList.innerHTML += productCard;
+                });
+            });
+        }
+
+        // Search & Filter Logic
+        document.getElementById("search-bar").addEventListener("input", function () {
+            const searchQuery = this.value.toLowerCase();
+            document.querySelectorAll(".product-card").forEach(card => {
+                const productName = card.querySelector(".card-title").textContent.toLowerCase();
+                card.style.display = productName.includes(searchQuery) ? "block" : "none";
+            });
+        });
+
+        document.getElementById("category-filter").addEventListener("change", function () {
+            const selectedCategory = this.value;
+            document.querySelectorAll(".product-card").forEach(card => {
+                const productCategory = card.getAttribute("data-category");
+                card.style.display = (selectedCategory === "all" || productCategory === selectedCategory) ? "block" : "none";
+            });
+        });
+
+        // Load Products on Page Load
+        fetchProducts();
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

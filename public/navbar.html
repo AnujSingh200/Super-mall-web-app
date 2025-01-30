@@ -1,0 +1,11 @@
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Super Mall</a>
+        <div class="d-flex">
+            ${window.location.pathname.includes('admin') ? 
+                `<button class="btn btn-outline-light me-2" 
+                    onclick="window.location.href='dashboard.html'">User View</button>` : ''}
+            <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</nav>

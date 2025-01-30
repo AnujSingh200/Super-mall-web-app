@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, update, delete: if request.auth.uid == userId;
+      allow create: if request.auth != null;
+      
+      // Admins can manage all users
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+  }
+}
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /shops/{shopId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if 
+        request.auth.token.role == "admin" ||
+        resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
